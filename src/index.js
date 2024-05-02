@@ -27,12 +27,17 @@ function onSearch(evt) {
     newApiService.resetpage();
     newApiService.fetchArticles()
         .then(({ data }) => {
-            if (data.hits.length !== 0) {
+            if (data.hits.length < newApiService.per_page) {
+                Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`, { timeout: 3000, },);
+                clearGallery()
+                renderSearchQuery(data.hits);
+
+            } else if (data.hits.length !== 0) {
                 Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`, { timeout: 3000, },);
                 clearGallery()
                 renderSearchQuery(data.hits);
                 refs.loadMore.classList.add('js-load-more');
-                console.log('Page:', newApiService.page)
+
             } else {
                 Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
                 clearGallery()
@@ -44,14 +49,17 @@ function onLoadMore(evt) {
     newApiService.incrementPage()
     newApiService.fetchArticles()
         .then(({ data }) => {
-            if ((data.hits.length * newApiService.page) > data.totalHits) {
-                refs.loadMore.classList.remove('js-load-more')
+            if ((data.totalHits - (data.hits.length * newApiService.page)) < newApiService.per_page) {
+                renderSearchQuery(data.hits);
+                refs.loadMore.classList.remove('js-load-more');
+                Notiflix.Notify.success(`Hooray! We found more ${data.hits.length} images.`, { timeout: 2000, },)
+
+            } else if (data.hits.length !== 0) {
+                Notiflix.Notify.success(`Hooray! We found ${data.totalHits - (data.hits.length * (newApiService.page - 1))} images.`, { timeout: 2000, },)
+                renderSearchQuery(data.hits);
+
+            } else {
                 Notiflix.Notify.info("We're sorry, but you've reached the end of search results.", { timeout: 3000, },)
-            }
-          else {
-                Notiflix.Notify.success(`Hooray! We found ${data.totalHits - (data.hits.length * (newApiService.page - 1))} images.`, { timeout: 2000, },) 
-                renderSearchQuery(data.hits)
-                console.log('Page:', newApiService.page)
 
             }
   })
