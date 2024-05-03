@@ -20,14 +20,14 @@ refs.searchInput.addEventListener('focus', () => {
 refs.searchForm.addEventListener('submit', onSearch);
 refs.loadMore.addEventListener('click', onLoadMore);
 
-function onSearch(evt) {
+async function onSearch(evt) {
     evt.preventDefault();
 
     newApiService.query = evt.currentTarget.elements.searchQuery.value;
     newApiService.resetpage();
-    newApiService.fetchArticles()
+    await newApiService.fetchArticles()
         .then(({ data }) => {
-            if (data.hits.length < newApiService.per_page) {
+            if (data.hits.length < newApiService.per_page && data.hits.length > 0) {
                 Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`, { timeout: 3000, },);
                 clearGallery()
                 renderSearchQuery(data.hits);
@@ -45,21 +45,24 @@ function onSearch(evt) {
             });
 };
 
-function onLoadMore(evt) {
+async function onLoadMore(evt) {
     newApiService.incrementPage()
-    newApiService.fetchArticles()
+    await newApiService.fetchArticles()
         .then(({ data }) => {
-            if ((data.totalHits - (data.hits.length * newApiService.page)) < newApiService.per_page) {
+            if ((data.totalHits - (data.hits.length * newApiService.page)) < newApiService.per_page && (data.totalHits - (data.hits.length * newApiService.page)) > 0) {
                 renderSearchQuery(data.hits);
                 refs.loadMore.classList.remove('js-load-more');
-                Notiflix.Notify.success(`Hooray! We found more ${data.hits.length} images.`, { timeout: 2000, },)
-
+                Notiflix.Notify.success(`Hooray! We found more ${data.hits.length} images.`, { timeout: 1000, },)
+                setTimeout(() => {
+                    Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+                }, 1500);
             } else if (data.hits.length !== 0) {
                 Notiflix.Notify.success(`Hooray! We found ${data.totalHits - (data.hits.length * (newApiService.page - 1))} images.`, { timeout: 2000, },)
                 renderSearchQuery(data.hits);
 
             } else {
-                Notiflix.Notify.info("We're sorry, but you've reached the end of search results.", { timeout: 3000, },)
+                Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.", { timeout: 3000, },)
+                refs.loadMore.classList.remove('js-load-more');
 
             }
   })
