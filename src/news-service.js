@@ -11,7 +11,7 @@ export default class NewApiService {
     }
     fetchArticles() {
         const url = `${BASE_URL}?key=${API_KEY}&q=${this.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&page=${this.page}&per_page=${this.per_page}`;
-        return axios.get(url);     
+        return axios.get(url);    
     }
 
     resetpage() {

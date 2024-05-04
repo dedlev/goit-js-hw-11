@@ -25,30 +25,29 @@ async function onSearch(evt) {
 
     newApiService.query = evt.currentTarget.elements.searchQuery.value;
     newApiService.resetpage();
-    await newApiService.fetchArticles()
-        .then(({ data }) => {
-            if (data.hits.length < newApiService.per_page && data.hits.length > 0) {
-                Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`, { timeout: 3000, },);
-                clearGallery()
-                renderSearchQuery(data.hits);
+    const response = await newApiService.fetchArticles();
+    const data = response.data;
+        if (data.hits.length < newApiService.per_page && data.hits.length > 0) {
+            Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`, { timeout: 3000, },);
+            clearGallery()
+            renderSearchQuery(data.hits);
 
-            } else if (data.hits.length !== 0) {
-                Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`, { timeout: 3000, },);
-                clearGallery()
-                renderSearchQuery(data.hits);
-                refs.loadMore.classList.add('js-load-more');
+        } else if (data.hits.length !== 0) {
+            Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`, { timeout: 3000, },);
+            clearGallery()
+            renderSearchQuery(data.hits);
+            refs.loadMore.classList.add('js-load-more');
 
-            } else {
-                Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
-                clearGallery()
-            }
-            });
+        } else {
+            Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+            clearGallery()
+        }    
 };
 
 async function onLoadMore(evt) {
     newApiService.incrementPage()
-    await newApiService.fetchArticles()
-        .then(({ data }) => {
+    const response = await newApiService.fetchArticles();
+    const data = response.data;
             if ((data.totalHits - (data.hits.length * newApiService.page)) < newApiService.per_page && (data.totalHits - (data.hits.length * newApiService.page)) > 0) {
                 renderSearchQuery(data.hits);
                 refs.loadMore.classList.remove('js-load-more');
@@ -65,7 +64,6 @@ async function onLoadMore(evt) {
                 refs.loadMore.classList.remove('js-load-more');
 
             }
-  })
 }
 
 function renderSearchQuery(items) {
